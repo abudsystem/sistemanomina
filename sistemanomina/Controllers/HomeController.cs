@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using System.Web.Mvc;
+using sistemanomina.Models; // Asegúrate de que este espacio de nombres sea correcto
+using System.Data.Entity;   // para incluir EF
 
 namespace sistemanomina.Controllers
 {
@@ -81,6 +83,28 @@ namespace sistemanomina.Controllers
             ViewBag.Message = "Pagina de Administracion";
             return View();
 
+
+        }
+        public ActionResult ProbarConexion()
+        {
+            using (var db = new NominaContext())
+            {
+                var count = db.Empleados.Count(); // Esto fuerza la creación de la DB
+                try
+                {
+                    
+                    // Cuenta los empleados de la tabla
+
+                    int cantidad = db.Empleados.Count();
+                    ViewBag.Message = "Conexión exitosa. Empleados registrados: " + cantidad;
+                }
+                catch (Exception ex)
+                {
+                    ViewBag.Message = "Error en la conexión: " + ex.Message;
+                }
+            }
+
+            return View();
 
         }
     }
