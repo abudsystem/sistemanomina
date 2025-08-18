@@ -12,5 +12,21 @@ namespace sistemanomina.Models
         {
             get; set;
         }
+        public int codigoEmpleado
+        {
+            get; set;
+        }
+          public int codigoDepart
+        {
+            get; set;
+        }
+        public int codigoDepartNuevo
+        {
+            get; set;
+        }
+        public string cedulaEmpl
+        {
+            get; set;
+        }
     }
 }

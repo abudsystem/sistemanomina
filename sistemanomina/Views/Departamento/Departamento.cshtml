@@ -3,6 +3,7 @@
     ViewBag.Title = "Departamento";
     var dt = ViewBag.Departamentos as DataTable; /*// DataTable que contiene los departamentos*/
     var dt_historial = ViewBag.Historial as DataTable; /*// DataTable que contiene el historial de movimientos*/
+    var dt_asignar = ViewBag.Asignar as DataTable; 
 }
 
 
@@ -10,8 +11,6 @@
 <link rel="stylesheet" href="https://cdn.datatables.net/1.13.8/css/jquery.dataTables.min.css" />
 <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.2/css/buttons.dataTables.min.css" />
 }
-
-
 
 
 <head>
@@ -45,7 +44,7 @@
         <section id="agregar" class="section" aria-labelledby="agregarTitle">
 
             <h3 id="agregarTitle">Cree un nuevo departamento</h3>
-            @*<form action="@Url.Action("Departamento","Departamento")" method="post" novalidate>*@
+            @*<form action="@Url.Action("Departamento","Departamento")" method="post" novalidate>*@ @*// para cuando no se usa script para descargar documentos*@ 
             <form action="@Url.Action("Agregar","Departamento")" method="post" novalidate>
                 @Html.AntiForgeryToken()
 
@@ -62,7 +61,7 @@
 
                     <div class="actions">
                         <button type="submit">Enviar</button>
-                        <button type="reset" class="ghost">Cancelar</button>
+                        @*<button type="reset" class="ghost">Cancelar</button>*@
                     </div>
                 </div>
             </form>
@@ -76,8 +75,8 @@
             <h3 id="consultarTitle">Lista de departamentos existentes</h3>
 
             @*<form action="@Url.Action("Consultar","Departamento")" method="get" class="mb-2">
-                    <button type="submit">Actualizar lista</button>
-                </form>*@
+            <button type="submit">Actualizar lista</button>
+        </form>*@
 
             @* Bloque de tabla basado en DataTable *@
             @if (dt != null && dt.Rows.Count > 0)
@@ -111,54 +110,119 @@
             {
                 <p class="muted">No hay departamentos para mostrar.</p>
             }
+
+
         </section>
 
-        <!-- Asignar -->
-        <section id="asignar" class="section" aria-labelledby="asignarTitle">
-            <h3 id="asignarTitle">Asignar departamento a empleado</h3>
-            <p class="muted">Formulario de asignación de empleados.</p>
-            <!-- TODO: formulario -->
-        </section>
 
-        <!-- Historial -->
-        <section id="historial" class="section" aria-labelledby="historialTitle">
-            <h3 id="historialTitle">Historial de movimientos</h3>
+            <!-- ASIGNAR -->
+            <section id="asignar" class="section" aria-labelledby="asignarTitle">
+                <h3 id="asignarTitle">Asignar departamento a empleado</h3>
+                <p class="muted">Formulario de asignación de empleados.</p>
 
-            @* Bloque de tabla basado en DataTable *@
-            @if (dt_historial != null && dt_historial.Rows.Count > 0)
-            {
-                @*<table class="table">*@
-                <table id="tablaHistorial" class="table dt-auto" data-title="Historial de movimientos" style="width:100%">
-                    @*para realizar filtros, busquedas , exportar a .xlsx, cvs, pdf, etc.*@
+                <form action="@Url.Action("Asignar","Departamento")" method="post" novalidate>
+                    @Html.AntiForgeryToken()
 
-                    <thead>
-                        <tr>
-                            @foreach (System.Data.DataColumn col in dt_historial.Columns)
-                            {
-                                <th>@col.ColumnName</th>
-                            }
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (System.Data.DataRow row in dt_historial.Rows)
-                        {
+                    <!-- Campo visible para CONSULTAR -->
+                    <div class="form-row">
+                        <input id="cedulaEmpl"
+                               name="cedulaEmpl"
+                               type="text"
+                               maxlength="50"
+                               required
+                               value="@(ViewBag.CedulaEmpl ?? "")"
+                               placeholder="Cédula del empleado" />
+                    </div>
+
+                    <!-- Campo visible para ASIGNAR -->
+                    <div class="form-row">
+                        <input id="dept_no_nuevo"
+                               name="dept_no_nuevo"
+                               type="number"
+                               placeholder="Nuevo departamento (ID)" />
+                    </div>
+
+                    <!-- Hidden que se rellenan tras CONSULTAR -->
+                    <input type="hidden" name="emp_no" value="@ViewBag.EmpNo" />
+                    <input type="hidden" name="dept_no_actual" value="@ViewBag.DeptNoActual" />
+
+                    <div class="actions">
+                        <button type="submit" name="accion" value="consultar">Consultar</button>
+                        <button type="submit" name="accion" value="asignar" @(ViewBag.EmpNo == null ? "disabled" : null)>Asignar</button>
+                    </div>
+                </form>
+
+                @* Tabla simple de resultados de la consulta *@
+           
+                @if (dt_asignar != null && dt_asignar.Rows.Count > 0)
+                {
+                    <table id="tablaAsignar" class="table" style="width:100%">
+                        <thead>
                             <tr>
-                                @foreach (var val in row.ItemArray)
+                                @foreach (System.Data.DataColumn col in dt_asignar.Columns)
                                 {
-                                    <td>@val</td>
+                                    <th>@col.ColumnName</th>
                                 }
                             </tr>
-                        }
-                    </tbody>
-                </table>
-            }
-            else
-            {
-                <p class="muted">Historial de movimientos del empleado entre áreas o departamentos.</p>
-            }
+                        </thead>
+                        <tbody>
+                            @foreach (System.Data.DataRow row in dt_asignar.Rows)
+                            {
+                                <tr>
+                                    @foreach (var val in row.ItemArray)
+                                    {
+                                        <td>@val</td>
+                                    }
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+                else
+                {
+                    <p class="muted">No hay empleados para mostrar.</p>
+                }
+            </section>
 
-        </section>
-    </main>
+            <!-- Historial -->
+            <section id="historial" class="section" aria-labelledby="historialTitle">
+                <h3 id="historialTitle">Historial de movimientos</h3>
+
+                @* Bloque de tabla basado en DataTable *@
+                @if (dt_historial != null && dt_historial.Rows.Count > 0)
+                {
+                    @*<table class="table">*@
+                    <table id="tablaHistorial" class="table dt-auto" data-title="Historial de movimientos" style="width:100%">
+                        @*para realizar filtros, busquedas , exportar a .xlsx, cvs, pdf, etc.*@
+
+                        <thead>
+                            <tr>
+                                @foreach (System.Data.DataColumn col in dt_historial.Columns)
+                                {
+                                    <th>@col.ColumnName</th>
+                                }
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (System.Data.DataRow row in dt_historial.Rows)
+                            {
+                                <tr>
+                                    @foreach (var val in row.ItemArray)
+                                    {
+                                        <td>@val</td>
+                                    }
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+                else
+                {
+                    <p class="muted">Historial de movimientos del empleado entre áreas o departamentos.</p>
+                }
+
+            </section>
+</main>
 </section>
 
 @*Script para realizar filtros, busquedas , exportar a .xlsx, cvs, pdf, etc.*@

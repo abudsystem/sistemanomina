@@ -4,6 +4,7 @@ using System.Configuration;
 using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Web;
 using System.Web.Mvc;
 using sistemanomina.Models;
@@ -47,40 +48,99 @@ namespace sistemanomina.Controllers
         }
 
         [HttpGet]
-        public ActionResult Consultar()
+        public ActionResult Asignar()
         {
+            ViewBag.ActiveTab = "asignar";
+            return View("Departamento");
+        }
+
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult Asignar(Departamento dep, string accion, int? emp_no, int? dept_no_actual, int? dept_no_nuevo)
+        {
+            ViewBag.ActiveTab = "asignar";
             var dt = new DataTable();
 
             try
             {
-                using (var cn = new SqlConnection(ConfigurationManager.ConnectionStrings["Cnn"].ConnectionString))
-                using (var da = new SqlDataAdapter("sp_getDeparments", cn)) // tu SP
+                // Consultar 
+                if (string.Equals(accion, "consultar", StringComparison.OrdinalIgnoreCase))
                 {
-                    da.SelectCommand.CommandType = CommandType.StoredProcedure;
-                    da.Fill(dt);
+                    using (var cn = new SqlConnection(ConfigurationManager.ConnectionStrings["Cnn"].ConnectionString))
+                    using (var cmd = new SqlCommand("sp_getAsigDepartEmpl", cn))
+                    using (var da = new SqlDataAdapter(cmd))
+                    {
+                        cmd.CommandType = CommandType.StoredProcedure;
+                        cmd.Parameters.AddWithValue("@ci", dep.cedulaEmpl ?? (object)DBNull.Value);
+                        da.Fill(dt);
+                    }
+
+                    ViewBag.Asignar = dt;
+                    ViewBag.CedulaEmpl = dep.cedulaEmpl;
+
+                    // Se debe agregar pregunta de fecha null para tomar el departamento actual correcto
+                    if (dt.Rows.Count > 0)
+                    {
+                        var r = dt.Rows[0];
+
+                        // Conecta con SP y utiliza los campos despues nombrados como AS                                         
+                        ViewBag.EmpNo = Convert.ToInt32(r["Id"]);
+                        ViewBag.DeptNoActual = Convert.ToInt32(r["Id_Departamento"]);
+
+                    }
+
+                    return View("Departamento", dep);
                 }
 
-                ViewBag.Departamentos = dt;      // <-- pasamos DataTable
-                ViewBag.ActiveTab = "consultar"; // para dejar activa la pestaña
-                Session["DeptSection"] = "consultar";
-                return View("Departamento");
+                //  Realiza validaciones y usa los paremetros SP tal cual: @emp_no, @dept_no, @dept_no_nuevo)
+                if (string.Equals(accion, "asignar", StringComparison.OrdinalIgnoreCase))
+                {
+                    if (emp_no == null || dept_no_actual == null || dept_no_nuevo == null)
+                    {
+                        ModelState.AddModelError("", "Faltan datos. Primero pulsa 'Consultar'.");
+                        return View("Departamento", dep);
+                    }
+                    if (dept_no_actual == dept_no_nuevo)
+                    {
+                        ModelState.AddModelError("", "El nuevo departamento no puede ser igual al actual.");
+                        return View("Departamento", dep);
+                    }
+
+                    using (var cn = new SqlConnection(ConfigurationManager.ConnectionStrings["Cnn"].ConnectionString))
+                    using (var cmd = new SqlCommand("sp_setAsigDepartEmpl", cn))
+                    {
+                        cmd.CommandType = CommandType.StoredProcedure;
+                        cmd.Parameters.AddWithValue("@emp_no", emp_no.Value);
+                        cmd.Parameters.AddWithValue("@dept_no", dept_no_actual.Value);
+                        cmd.Parameters.AddWithValue("@dept_no_nuevo", dept_no_nuevo.Value);
+                        cn.Open();
+                        cmd.ExecuteNonQuery();
+                    }
+
+                    TempData["ok"] = "Asignación realizada.";
+                    // Se podria reconsultar para actualizar la tabla
+                    return RedirectToAction("Asignar");
+                }
+
+                // Fallback
+                ModelState.AddModelError("", "Acción no reconocida.");
+                return View("Departamento", dep);
             }
             catch (SqlException ex)
             {
                 System.Diagnostics.Debug.WriteLine(ex);
-                ModelState.AddModelError("", "No se pudo consultar los departamentos.");
-                ViewBag.ActiveTab = "consultar";
-                return View("Departamento");
+                ModelState.AddModelError("", "Error de base de datos.");
+                return View("Departamento", dep);
             }
         }
-        [HttpGet]
-        public ActionResult Asignar()
-        {
-            TempData["ActiveTab"] = "asignar";
-            return View("Departamento");
-        }
+       
+
+        // Historial de cambios de departamentos por empleados
 
         [HttpGet]
+
+       
         public ActionResult Historial()
         {
             var dt_historial = new DataTable();
