@@ -49,6 +49,9 @@ namespace sistemanomina.Models
         [StringLength(120)]
         public string correo { get; set; }
 
+        public bool is_active { get; set; } = true; // por defecto 1
+
+
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<dept_emp> dept_emp { get; set; }
 

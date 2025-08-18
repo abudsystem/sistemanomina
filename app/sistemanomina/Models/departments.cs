@@ -27,5 +27,8 @@ namespace sistemanomina.Models
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
         public virtual ICollection<dept_manager> dept_manager { get; set; }
+
+        // nurva columna manejo de departamentos activos/ no activos
+        public bool is_active { get; set; } = true; /// por defecto 1
     }
 }
