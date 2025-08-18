@@ -318,9 +318,9 @@ go
 
 -- procedure para lista todos los empleados
 CREATE OR ALTER PROCEDURE sp_getEmployees
+    @query VARCHAR(120) = NULL -- parametro opcional
 AS
 BEGIN
-    -- aseguramos que el formato de la fecha sea día/mes/año
     SET DATEFORMAT dmy;
 
     SELECT 
@@ -332,7 +332,7 @@ BEGIN
         birth_date,
         hire_date, 
         correo,
-		is_active,
+        is_active,
         DATEDIFF(YEAR, CAST(birth_date AS DATE), GETDATE()) 
             - CASE 
                 WHEN (MONTH(CAST(birth_date AS DATE)) > MONTH(GETDATE())) 
@@ -341,10 +341,17 @@ BEGIN
                 THEN 1 
                 ELSE 0 
               END AS age
-    FROM employees;
+    FROM employees
+    WHERE
+        @query IS NULL
+        OR ci LIKE '%' + @query + '%'
+        OR first_name LIKE '%' + @query + '%'
+        OR last_name LIKE '%' + @query + '%'
+        OR correo LIKE '%' + @query + '%';
 END
 GO
 
+exec sp_getEmployees 'erika'
 
 
 select * from employees
