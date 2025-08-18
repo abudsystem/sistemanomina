@@ -1,11 +1,130 @@
 ﻿
+@model List<sistemanomina.Models.employees>
+
+<!--Datos de la vista-->
+@{
+    ViewBag.Title = "Empleados";
+    int totalItems = ViewBag.TotalItems;
+    int pageSize = ViewBag.PageSize;
+    int currentPage = ViewBag.CurrentPage;
+    int totalPages = (int)Math.Ceiling((double)totalItems / pageSize);
+    string search = ViewBag.Search ?? "";
+    string estado = ViewBag.Estado ?? "Todos";
+}
+
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
     <title>Empleados - Home</title>
 </head>
 <body>
-    <main>
+    <h2 class="mb-3">Empleados</h2>
 
-    </main>
+    <div class="row mb-3">
+        <div class="col-md-4">
+            @using (Html.BeginForm("Index", "Empleados", FormMethod.Get))
+            {
+                <div class="input-group">
+                    @Html.TextBox("query", search, new { @class = "form-control", placeholder = "Buscar por nombre, CI o correo..." })
+                    <span class="input-group-btn">
+                        <button class="btn btn-primary" type="submit">Buscar</button>
+                    </span>
+                </div>
+                <div class="mt-2">
+                    <label class="me-2">Estado:</label>
+                    <label class="me-2">
+                        <input type="radio" name="estado" value="Todos" @(estado == "Todos" ? "checked" : "") onchange="this.form.submit()" /> Todos
+                    </label>
+                    <label class="me-2">
+                        <input type="radio" name="estado" value="Activo" @(estado == "Activo" ? "checked" : "") onchange="this.form.submit()" /> Activos
+                    </label>
+                    <label>
+                        <input type="radio" name="estado" value="Desactivado" @(estado == "Desactivado" ? "checked" : "") onchange="this.form.submit()" /> Desactivados
+                    </label>
+                </div>
+            }
+        </div>
+        <div class="col-md-8 text-end">
+            @Html.ActionLink("➕ Crear Empleado", "Create", null, new { @class = "btn btn-success me-2" })
+            @Html.ActionLink("📑 Generar Reporte", "Reporte", null, new { @class = "btn btn-secondary" })
+        </div>
+    </div>
+
+    <table class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>Nombre</th>
+                <th>Apellido</th>
+                <th>CI</th>
+                <th>Correo</th>
+                <th>Fecha Ingreso</th>
+                <th>Estado</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model != null && Model.Any())
+            {
+                foreach (var emp in Model)
+                {
+                    <tr>
+                        <td>@emp.first_name</td>
+                        <td>@emp.last_name</td>
+                        <td>@emp.ci</td>
+                        <td>@emp.correo</td>
+                        <td>@emp.hire_date</td>
+                        <td>
+                            @if (emp.is_active)
+                            {
+                                <span class="badge bg-success">Activo</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-danger">Desactivado</span>
+                            }
+                        </td>
+                        <td>
+                            @Html.ActionLink("✏️ Editar", "Edit", new { id = emp.emp_no }, new { @class = "btn btn-sm btn-primary me-1" })
+
+                            @using (Html.BeginForm("CambiarEstado", "Empleados", FormMethod.Post))
+                            {
+                                @Html.Hidden("empNo", emp.emp_no)
+                                <button type="submit" class="btn btn-sm @(emp.is_active ? "btn-warning" : "btn-success")">
+                                    @(emp.is_active ? "Desactivar" : "Activar")
+                                </button>
+                            }
+                        </td>
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr>
+                    <td colspan="8" class="text-center">No se encontraron empleados</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <!-- Paginación -->
+    <nav aria-label="Page navigation">
+        <ul class="pagination justify-content-center">
+            <li class="page-item @(currentPage == 1 ? "disabled" : "")">
+                @Html.ActionLink("« Anterior", "Index", new { pagina = currentPage - 1, query = search, estado = estado }, new { @class = "page-link" })
+            </li>
+
+            @for (int i = 1; i <= totalPages; i++)
+            {
+                <li class="page-item @(i == currentPage ? "active" : "")">
+                    @Html.ActionLink(i.ToString(), "Index", new { pagina = i, query = search, estado = estado }, new { @class = "page-link" })
+                </li>
+            }
+
+            <li class="page-item @(currentPage == totalPages ? "disabled" : "")">
+                @Html.ActionLink("Siguiente »", "Index", new { pagina = currentPage + 1, query = search, estado = estado }, new { @class = "page-link" })
+            </li>
+        </ul>
+    </nav>
+
+
 </body>
 </html>

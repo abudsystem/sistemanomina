@@ -1,5 +1,7 @@
-﻿using System;
+﻿using sistemanomina.Models;
+using System;
 using System.Collections.Generic;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Web;
 using System.Web.Mvc;
@@ -8,82 +10,49 @@ namespace sistemanomina.Controllers
 {
     public class EmpleadosController : Controller
     {
+        private readonly NominaDBEntities nominaDB = new NominaDBEntities();
         // GET: Empleados
-        public ActionResult Index()
+        public ActionResult Index(string query, string estado = "Todos", int pagina = 1, int elementosPagina = 15)
         {
-            return View();
+            // parámetros para el SP
+            var queryParam = new SqlParameter("@query", string.IsNullOrEmpty(query) ? DBNull.Value : (object)query);
+            var estadoParam = new SqlParameter("@estado", string.IsNullOrEmpty(estado) ? "Todos" : estado);
+
+            // ejecutamos el SP
+            var empleados = nominaDB.Database.SqlQuery<employees>(
+                "EXEC sp_getEmployees @query, @estado",
+                queryParam,
+                estadoParam
+            ).ToList();
+
+            // paginación manual
+            int totalEmpleados = empleados.Count;
+            var empleadosPagina = empleados
+                .OrderBy(e => e.emp_no)
+                .Skip((pagina - 1) * elementosPagina)
+                .Take(elementosPagina)
+                .ToList();
+
+            // datos para la vista
+            ViewBag.CurrentPage = pagina;
+            ViewBag.PageSize = elementosPagina;
+            ViewBag.TotalItems = totalEmpleados;
+            ViewBag.Search = query;
+            ViewBag.Estado = estado;
+
+            return View(empleadosPagina);
         }
 
-        // GET: Empleados/Details/5
-        public ActionResult Details(int id)
-        {
-            return View();
-        }
-
-        // GET: Empleados/Create
-        public ActionResult Create()
-        {
-            return View();
-        }
-
-        // POST: Empleados/Create
         [HttpPost]
-        public ActionResult Create(FormCollection collection)
+        public ActionResult CambiarEstado(int empNo)
         {
-            try
+            var emp = nominaDB.employees.Find(empNo);
+            if (emp != null)
             {
-                // TODO: Add insert logic here
-
-                return RedirectToAction("Index");
+                emp.is_active = !emp.is_active;
+                nominaDB.SaveChanges();
             }
-            catch
-            {
-                return View();
-            }
-        }
-
-        // GET: Empleados/Edit/5
-        public ActionResult Edit(int id)
-        {
-            return View();
-        }
-
-        // POST: Empleados/Edit/5
-        [HttpPost]
-        public ActionResult Edit(int id, FormCollection collection)
-        {
-            try
-            {
-                // TODO: Add update logic here
-
-                return RedirectToAction("Index");
-            }
-            catch
-            {
-                return View();
-            }
-        }
-
-        // GET: Empleados/Delete/5
-        public ActionResult Delete(int id)
-        {
-            return View();
-        }
-
-        // POST: Empleados/Delete/5
-        [HttpPost]
-        public ActionResult Delete(int id, FormCollection collection)
-        {
-            try
-            {
-                // TODO: Add delete logic here
-
-                return RedirectToAction("Index");
-            }
-            catch
-            {
-                return View();
-            }
+            return RedirectToAction("Index");
         }
     }
 }
