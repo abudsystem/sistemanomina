@@ -310,17 +310,19 @@ END;
 GO
 
 declare @mensaje varchar(100)
-exec sp_insertEmployee '1245763300', '12/09/2001', 'Federico', 'Navas', 
-				'federico.n@correo.com', 'M', 'federico19', @mensaje output
+exec sp_insertEmployee '1245763307', '12/09/2001', 'Roberto', 'Borja', 
+				'robert@correo.com', 'M', 'rovert3', @mensaje output
 select @mensaje
 
 go
 
 -- procedure para lista todos los empleados
 CREATE OR ALTER PROCEDURE sp_getEmployees
-    @query VARCHAR(120) = NULL -- parametro opcional
+    @query NVARCHAR(100) = NULL,
+    @estado NVARCHAR(20) = 'Todos'
 AS
 BEGIN
+    SET NOCOUNT ON;
     SET DATEFORMAT dmy;
 
     SELECT 
@@ -342,16 +344,29 @@ BEGIN
                 ELSE 0 
               END AS age
     FROM employees
-    WHERE
-        @query IS NULL
-        OR ci LIKE '%' + @query + '%'
-        OR first_name LIKE '%' + @query + '%'
-        OR last_name LIKE '%' + @query + '%'
-        OR correo LIKE '%' + @query + '%';
-END
+    WHERE 
+        -- Filtro de búsqueda (si viene vacío, no se aplica)
+        (
+            @query IS NULL 
+            OR ci LIKE '%' + @query + '%'
+            OR first_name LIKE '%' + @query + '%'
+            OR last_name LIKE '%' + @query + '%'
+            OR correo LIKE '%' + @query + '%'
+        )
+        AND
+        -- Filtro por estado (Activo/Desactivado/Todos)
+        (
+            @estado = 'Todos'
+            OR (@estado = 'Activo' AND is_active = 1)
+            OR (@estado = 'Desactivado' AND is_active = 0)
+        );
+END;
 GO
 
-exec sp_getEmployees 'erika'
+declare @query NVARCHAR(100) 
+declare @estado NVARCHAR(20) 
+
+exec sp_getEmployees @query=Null, @estado='Desactivado'
 
 
 select * from employees
