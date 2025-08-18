@@ -23,6 +23,7 @@ namespace sistemanomina.Models
 
         [Required]
         [StringLength(50)]
+        [Index("ix_employees_ci", IsUnique=true)] // restruccion unique
         public string ci { get; set; }
 
         [Required]
@@ -47,6 +48,7 @@ namespace sistemanomina.Models
 
         [Required]
         [StringLength(120)]
+        [Index("ix_employees_correo", IsUnique = true)]
         public string correo { get; set; }
 
         public bool is_active { get; set; } = true; // por defecto 1

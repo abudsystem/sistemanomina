@@ -145,6 +145,10 @@
     <Compile Include="Migrations\202508180406094_AgregarRolUsers.Designer.cs">
       <DependentUpon>202508180406094_AgregarRolUsers.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202508180415128_AgregarUniqueConstraintEmployees.cs" />
+    <Compile Include="Migrations\202508180415128_AgregarUniqueConstraintEmployees.Designer.cs">
+      <DependentUpon>202508180415128_AgregarUniqueConstraintEmployees.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\departments.cs" />
     <Compile Include="Models\dept_emp.cs" />
@@ -260,6 +264,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202508180406094_AgregarRolUsers.resx">
       <DependentUpon>202508180406094_AgregarRolUsers.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202508180415128_AgregarUniqueConstraintEmployees.resx">
+      <DependentUpon>202508180415128_AgregarUniqueConstraintEmployees.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <PropertyGroup>
