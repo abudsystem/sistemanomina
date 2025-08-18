@@ -141,6 +141,10 @@
     <Compile Include="Migrations\202508180343408_AgregarIsACtive.Designer.cs">
       <DependentUpon>202508180343408_AgregarIsACtive.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202508180406094_AgregarRolUsers.cs" />
+    <Compile Include="Migrations\202508180406094_AgregarRolUsers.Designer.cs">
+      <DependentUpon>202508180406094_AgregarRolUsers.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\departments.cs" />
     <Compile Include="Models\dept_emp.cs" />
@@ -253,6 +257,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202508180343408_AgregarIsACtive.resx">
       <DependentUpon>202508180343408_AgregarIsACtive.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202508180406094_AgregarRolUsers.resx">
+      <DependentUpon>202508180406094_AgregarRolUsers.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <PropertyGroup>

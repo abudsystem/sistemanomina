@@ -20,6 +20,10 @@ namespace sistemanomina.Models
         [StringLength(20)]
         public string clave { get; set; }
 
+        [Required]
+        [StringLength (20)]
+        public string rol {  get; set; }
+
         public virtual employees employees { get; set; }
     }
 }
