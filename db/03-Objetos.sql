@@ -371,4 +371,40 @@ exec sp_getEmployees @query=Null, @estado='Desactivado'
 
 select * from employees
 select * from users
+GO
 
+-- SQP para actualizar datos del empleado
+CREATE OR ALTER PROCEDURE sp_updateEmployeePassword
+    @emp_no INT,
+    @ci VARCHAR(10),
+    @first_name VARCHAR(50),
+    @last_name VARCHAR(50),
+    @gender CHAR(1),
+    @birth_date VARCHAR(20),
+    @hire_date varchar(20),
+    @correo VARCHAR(100),
+    @clave VARCHAR(50) = NULL -- parámetro opcional
+AS
+BEGIN
+    -- Actualizar datos del empleado
+    UPDATE employees
+    SET 
+        ci = @ci,
+        first_name = @first_name,
+        last_name = @last_name,
+        gender = @gender,
+        birth_date = @birth_date,
+        hire_date = @hire_date,
+        correo = @correo
+    WHERE emp_no = @emp_no;
+
+    -- Actualizar clave solo si se proporciona
+    IF @clave IS NOT NULL
+    BEGIN
+        -- Aquí puedes hashear la clave si es necesario
+        UPDATE users
+        SET clave = @clave
+        WHERE emp_no = @emp_no;
+    END
+END
+GO
